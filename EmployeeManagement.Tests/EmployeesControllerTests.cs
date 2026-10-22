@@ -78,4 +78,66 @@ public class EmployeesControllerTests
         Assert.Contains(results, r => r.MemberNames.Contains("Email"));
         Assert.Contains(results, r => r.MemberNames.Contains("MonthlySalary"));
     }
+
+    [Fact]
+    public async Task Edit_Get_UnknownId_ReturnsNotFound()
+    {
+        using var db = NewDb();
+        var controller = new EmployeesController(db);
+
+        var result = await controller.Edit(999);
+
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task Edit_Post_ValidData_UpdatesEmployee()
+    {
+        using var db = NewDb();
+        var emp = new Employee { FullName = "Old Name", Email = "old@test.com", DepartmentId = 1, MonthlySalary = 1000 };
+        db.Employees.Add(emp);
+        db.SaveChanges();
+        var controller = new EmployeesController(db);
+
+        var updated = new Employee
+        {
+            Id = emp.Id,
+            FullName = "New Name",
+            Email = "new@test.com",
+            DepartmentId = 2,
+            MonthlySalary = 2000
+        };
+        var result = await controller.Edit(emp.Id, updated);
+
+        Assert.IsType<RedirectToActionResult>(result);
+        var saved = db.Employees.Find(emp.Id)!;
+        Assert.Equal("New Name", saved.FullName);
+        Assert.Equal(2000, saved.MonthlySalary);
+    }
+
+    [Fact]
+    public async Task Delete_Post_RemovesEmployee()
+    {
+        using var db = NewDb();
+        var emp = new Employee { FullName = "Temp", Email = "temp@test.com", DepartmentId = 1, MonthlySalary = 1000 };
+        db.Employees.Add(emp);
+        db.SaveChanges();
+        var controller = new EmployeesController(db);
+
+        var result = await controller.DeleteConfirmed(emp.Id);
+
+        Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(0, db.Employees.Count());
+    }
+
+    [Fact]
+    public async Task Delete_Get_UnknownId_ReturnsNotFound()
+    {
+        using var db = NewDb();
+        var controller = new EmployeesController(db);
+
+        var result = await controller.Delete(999);
+
+        Assert.IsType<NotFoundResult>(result);
+    }
 }

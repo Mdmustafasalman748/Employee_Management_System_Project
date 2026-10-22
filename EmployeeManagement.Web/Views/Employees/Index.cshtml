@@ -14,6 +14,7 @@
             <th>Department</th>
             <th>Monthly Salary</th>
             <th>Joined</th>
+               <th></th>
         </tr>
     </thead>
     <tbody>
@@ -25,6 +26,10 @@
                 <td>@e.Department?.Name</td>
                 <td>@e.MonthlySalary.ToString("N2")</td>
                 <td>@e.JoinedOn.ToString("dd MMM yyyy")</td>
+                 <td>
+                 <a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                 <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
             </tr>
         }
     </tbody>
