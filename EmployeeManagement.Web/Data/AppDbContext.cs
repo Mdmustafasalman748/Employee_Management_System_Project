@@ -12,6 +12,11 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Employee>()
+    .HasOne(e => e.Department)
+    .WithMany(d => d.Employees)
+    .HasForeignKey(e => e.DepartmentId)
+    .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Department>().HasData(
             new Department { Id = 1, Name = "IT", Location = "Block A" },
             new Department { Id = 2, Name = "HR", Location = "Block B" }

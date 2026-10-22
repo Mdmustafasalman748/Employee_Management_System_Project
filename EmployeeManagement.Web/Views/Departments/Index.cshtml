@@ -1,0 +1,32 @@
+@model List<EmployeeManagement.Web.Models.Department>
+    @{
+    ViewData["Title"] = "Departments";
+    }
+
+    <h1>Departments</h1>
+    <p><a asp-action="Create" class="btn btn-primary">Add Department</a></p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Employees</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model)
+        {
+            <tr>
+                <td>@d.Name</td>
+                <td>@d.Location</td>
+                <td>@d.Employees.Count</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@d.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>

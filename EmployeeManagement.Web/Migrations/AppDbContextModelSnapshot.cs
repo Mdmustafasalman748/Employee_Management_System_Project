@@ -25,10 +25,12 @@ namespace EmployeeManagement.Web.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -87,7 +89,7 @@ namespace EmployeeManagement.Web.Migrations
                     b.HasOne("EmployeeManagement.Web.Models.Department", "Department")
                         .WithMany("Employees")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Department");
