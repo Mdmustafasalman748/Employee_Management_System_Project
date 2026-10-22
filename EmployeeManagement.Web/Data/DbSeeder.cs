@@ -1,5 +1,4 @@
 using EmployeeManagement.Web.Models;
-using System;
 
 namespace EmployeeManagement.Web.Data;
 
@@ -9,11 +8,23 @@ public static class DbSeeder
     {
         if (db.Employees.Any()) return;   // only seed an empty table
 
-        db.Employees.AddRange(
-            new Employee { FullName = "Aisha Khan", Email = "aisha.khan@company.com", DepartmentId = 1, MonthlySalary = 6000, JoinedOn = new DateTime(2024, 1, 15) },
-            new Employee { FullName = "Rahul Mehta", Email = "rahul.mehta@company.com", DepartmentId = 1, MonthlySalary = 5500, JoinedOn = new DateTime(2024, 6, 3) },
-            new Employee { FullName = "Sara Ali", Email = "sara.ali@company.com", DepartmentId = 2, MonthlySalary = 4800, JoinedOn = new DateTime(2025, 2, 20) }
-        );
+        var names = new (string Name, int Dept, decimal Salary)[]
+        {
+            ("Aisha Khan", 1, 6000), ("Rahul Mehta", 1, 5500), ("Sara Ali", 2, 4800),
+            ("Daniel Brown", 1, 5200), ("Priya Nair", 2, 4600), ("Omar Farouk", 1, 6400),
+            ("Emily Clark", 2, 4900), ("Kenji Sato", 1, 7000), ("Lina Petrov", 2, 4700),
+            ("Carlos Diaz", 1, 5800), ("Fatima Noor", 2, 5000), ("Tom Wright", 1, 5300)
+        };
+
+        var joined = new DateTime(2024, 1, 15);
+        db.Employees.AddRange(names.Select((n, i) => new Employee
+        {
+            FullName = n.Name,
+            Email = n.Name.ToLower().Replace(" ", ".") + "@company.com",
+            DepartmentId = n.Dept,
+            MonthlySalary = n.Salary,
+            JoinedOn = joined.AddMonths(i)
+        }));
         db.SaveChanges();
     }
 }

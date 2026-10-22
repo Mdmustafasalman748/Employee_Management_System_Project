@@ -17,14 +17,35 @@ public class EmployeesController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index()
+    private const int PageSize = 5;
+
+    public async Task<IActionResult> Index(string? search, int page = 1)
     {
-        var employees = await _db.Employees
-            .Include(e => e.Department)
+        var query = _db.Employees.Include(e => e.Department).AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(e => e.FullName.Contains(term) || e.Email.Contains(term));
+        }
+
+        var total = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
+        page = Math.Clamp(page, 1, totalPages);
+
+        var employees = await query
             .OrderBy(e => e.FullName)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
             .ToListAsync();
 
-        return View(employees);
+        return View(new EmployeeListViewModel
+        {
+            Employees = employees,
+            Search = search,
+            Page = page,
+            TotalPages = totalPages
+        });
     }
 
     public async Task<IActionResult> Create()
@@ -48,8 +69,6 @@ public class EmployeesController : Controller
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
-
-    // ---------- NEW IN DAY 5 ----------
 
     public async Task<IActionResult> Edit(int id)
     {

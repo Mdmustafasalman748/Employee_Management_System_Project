@@ -35,9 +35,9 @@ public class EmployeesControllerTests
         var result = await controller.Index();
 
         var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<List<Employee>>(view.Model);
-        Assert.Equal(2, model.Count);
-        Assert.Equal("Adam", model[0].FullName);
+        var model = Assert.IsType<EmployeeListViewModel>(view.Model);
+        Assert.Equal(2, model.Employees.Count);
+        Assert.Equal("Adam", model.Employees[0].FullName);
     }
 
     [Fact]
