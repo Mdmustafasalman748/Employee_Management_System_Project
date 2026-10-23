@@ -1,8 +1,66 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model EmployeeManagement.Web.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="text-muted">Employees</div>
+                <div class="display-6">@Model.TotalEmployees</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="text-muted">Departments</div>
+                <div class="display-6">@Model.TotalDepartments</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="text-muted">Average monthly salary</div>
+                <div class="display-6">@Model.AverageMonthlySalary.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-7 mb-4">
+        <h4>Employees by department</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr><th>Department</th><th>Employees</th><th>Total monthly salary</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Departments)
+                {
+                <tr>
+                    <td>@d.Name</td>
+                    <td>@d.EmployeeCount</td>
+                    <td>@d.TotalMonthlySalary.ToString("N2")</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-5 mb-4">
+        <h4>Recent hires</h4>
+        <ul class="list-group">
+            @foreach (var e in Model.RecentHires)
+            {
+            <li class="list-group-item d-flex justify-content-between">
+                <span>@e.FullName</span>
+                <span class="text-muted">@e.JoinedOn.ToString("dd MMM yyyy")</span>
+            </li>
+            }
+        </ul>
+    </div>
 </div>

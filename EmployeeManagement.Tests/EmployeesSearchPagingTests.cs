@@ -19,15 +19,18 @@ public class EmployeesSearchPagingTests
         return new AppDbContext(options);
     }
 
+    private static Department NewDept() => new Department { Name = "Test", Location = "Test" };
+
     [Fact]
     public async Task Index_Search_ReturnsOnlyMatchingEmployees()
     {
         using var db = NewDb();
+        var dept = NewDept();
         db.Employees.AddRange(
-            new Employee { FullName = "Alice Smith", Email = "alice@test.com" },
-            new Employee { FullName = "Bob Jones", Email = "bob@test.com" });
+            new Employee { FullName = "Alice Smith", Email = "alice@test.com", Department = dept },
+            new Employee { FullName = "Bob Jones", Email = "bob@test.com", Department = dept });
         db.SaveChanges();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var result = await controller.Index("Smith", 1);
 
@@ -40,10 +43,11 @@ public class EmployeesSearchPagingTests
     public async Task Index_SecondPage_ReturnsRemainingEmployees()
     {
         using var db = NewDb();
+        var dept = NewDept();
         for (int i = 1; i <= 7; i++)
-            db.Employees.Add(new Employee { FullName = $"Employee {i}", Email = $"e{i}@test.com" });
+            db.Employees.Add(new Employee { FullName = $"Employee {i}", Email = $"e{i}@test.com", Department = dept });
         db.SaveChanges();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var result = await controller.Index(null, 2);
 
@@ -57,13 +61,14 @@ public class EmployeesSearchPagingTests
     public async Task Index_PageNumberTooHigh_IsClampedToLastPage()
     {
         using var db = NewDb();
-        db.Employees.Add(new Employee { FullName = "Only One", Email = "one@test.com" });
+        db.Employees.Add(new Employee { FullName = "Only One", Email = "one@test.com", Department = NewDept() });
         db.SaveChanges();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var result = await controller.Index(null, 999);
 
         var model = Assert.IsType<EmployeeListViewModel>(Assert.IsType<ViewResult>(result).Model);
         Assert.Equal(1, model.Page);
+        Assert.Single(model.Employees);
     }
 }

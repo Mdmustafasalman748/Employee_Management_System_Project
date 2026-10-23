@@ -34,6 +34,7 @@ public class DepartmentsController : Controller
 
         _db.Departments.Add(department);
         await _db.SaveChangesAsync();
+        TempData["Success"] = $"Department {department.Name} was added.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -57,6 +58,7 @@ public class DepartmentsController : Controller
         existing.Name = department.Name;
         existing.Location = department.Location;
         await _db.SaveChangesAsync();
+        TempData["Success"] = $"Department {existing.Name} was updated.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -86,6 +88,7 @@ public class DepartmentsController : Controller
 
         _db.Departments.Remove(department);
         await _db.SaveChangesAsync();
+        TempData["Success"] = $"Department {department.Name} was deleted.";
         return RedirectToAction(nameof(Index));
     }
 }

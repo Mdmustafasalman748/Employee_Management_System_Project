@@ -19,7 +19,7 @@ public class EmployeesController : Controller
 
     private const int PageSize = 5;
 
-    public async Task<IActionResult> Index(string? search, int page = 1)
+    public async Task<IActionResult> Index(string? search = null, int page = 1)
     {
         var query = _db.Employees.Include(e => e.Department).AsQueryable();
 
@@ -67,6 +67,7 @@ public class EmployeesController : Controller
 
         _db.Employees.Add(employee);
         await _db.SaveChangesAsync();
+        TempData["Success"] = $"{employee.FullName} was added.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -103,6 +104,7 @@ public class EmployeesController : Controller
         existing.JoinedOn = employee.JoinedOn;
 
         await _db.SaveChangesAsync();
+        TempData["Success"] = $"{existing.FullName} was updated.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -125,6 +127,7 @@ public class EmployeesController : Controller
         {
             _db.Employees.Remove(employee);
             await _db.SaveChangesAsync();
+            TempData["Success"] = $"{employee.FullName} was deleted.";
         }
         return RedirectToAction(nameof(Index));
     }

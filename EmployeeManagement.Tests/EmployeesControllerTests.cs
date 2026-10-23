@@ -31,7 +31,7 @@ public class EmployeesControllerTests
             new Employee { FullName = "Adam", Email = "a@test.com", Department = dept });
         db.SaveChanges();
 
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
         var result = await controller.Index();
 
         var view = Assert.IsType<ViewResult>(result);
@@ -44,7 +44,7 @@ public class EmployeesControllerTests
     public async Task Create_ValidEmployee_SavesAndRedirects()
     {
         using var db = NewDb();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
         var emp = new Employee { FullName = "Nina", Email = "nina@test.com", DepartmentId = 1, MonthlySalary = 5000 };
 
         var result = await controller.Create(emp);
@@ -57,7 +57,7 @@ public class EmployeesControllerTests
     public async Task Create_InvalidModel_ReturnsViewAndDoesNotSave()
     {
         using var db = NewDb();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
         controller.ModelState.AddModelError("FullName", "Required");
 
         var result = await controller.Create(new Employee());
@@ -83,7 +83,7 @@ public class EmployeesControllerTests
     public async Task Edit_Get_UnknownId_ReturnsNotFound()
     {
         using var db = NewDb();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var result = await controller.Edit(999);
 
@@ -97,7 +97,7 @@ public class EmployeesControllerTests
         var emp = new Employee { FullName = "Old Name", Email = "old@test.com", DepartmentId = 1, MonthlySalary = 1000 };
         db.Employees.Add(emp);
         db.SaveChanges();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var updated = new Employee
         {
@@ -122,7 +122,7 @@ public class EmployeesControllerTests
         var emp = new Employee { FullName = "Temp", Email = "temp@test.com", DepartmentId = 1, MonthlySalary = 1000 };
         db.Employees.Add(emp);
         db.SaveChanges();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var result = await controller.DeleteConfirmed(emp.Id);
 
@@ -134,7 +134,7 @@ public class EmployeesControllerTests
     public async Task Delete_Get_UnknownId_ReturnsNotFound()
     {
         using var db = NewDb();
-        var controller = new EmployeesController(db);
+        var controller = new EmployeesController(db).WithTempData();
 
         var result = await controller.Delete(999);
 
