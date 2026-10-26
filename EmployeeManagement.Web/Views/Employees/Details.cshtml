@@ -1,0 +1,29 @@
+@model EmployeeManagement.Web.Models.Employee
+@{
+    ViewData["Title"] = Model.FullName;
+}
+
+<h1>@Model.FullName</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Email</dd>
+
+    <dt class="col-sm-3">Department</dt>
+    <dd class="col-sm-9">@Model.Department?.Name (@Model.Department?.Location)</dd>
+
+    <dt class="col-sm-3">Monthly salary</dt>
+    <dd class="col-sm-9">@Model.MonthlySalary.ToString("N2")</dd>
+
+    <dt class="col-sm-3">Annual salary</dt>
+    <dd class="col-sm-9">@Model.AnnualSalary.ToString("N2")</dd>
+
+    <dt class="col-sm-3">Joined</dt>
+    <dd class="col-sm-9">@Model.JoinedOn.ToString("dd MMMM yyyy")</dd>
+</dl>
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+}
+<a asp-action="Index" class="btn btn-secondary">Back to list</a>

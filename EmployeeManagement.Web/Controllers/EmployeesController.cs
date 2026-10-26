@@ -1,3 +1,5 @@
+using System.Text;
+using EmployeeManagement.Web.Services;
 using EmployeeManagement.Web.Data;
 using EmployeeManagement.Web.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 
 namespace EmployeeManagement.Web.Controllers;
 
@@ -137,6 +140,37 @@ public class EmployeesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [AllowAnonymous]
+    public async Task<IActionResult> Details(int id)
+    {
+        var employee = await _db.Employees
+            .Include(e => e.Department)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id);
+        if (employee == null) return NotFound();
+
+        return View(employee);
+    }
+
+    // Requires login: the class-level [Authorize] applies
+    public async Task<IActionResult> ExportCsv(string? search = null)
+    {
+        var query = _db.Employees.Include(e => e.Department).AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(e => e.FullName.Contains(term) || e.Email.Contains(term));
+        }
+
+        var employees = await query.OrderBy(e => e.FullName).ToListAsync();
+
+        // The BOM (byte-order mark) makes Excel read accented names correctly
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+        var bytes = encoding.GetPreamble().Concat(encoding.GetBytes(CsvExporter.Build(employees))).ToArray();
+
+        return File(bytes, "text/csv", $"employees-{DateTime.UtcNow:yyyyMMdd}.csv");
+    }
     private async Task PopulateDepartments(int? selectedId = null)
     {
         var departments = await _db.Departments.OrderBy(d => d.Name).ToListAsync();

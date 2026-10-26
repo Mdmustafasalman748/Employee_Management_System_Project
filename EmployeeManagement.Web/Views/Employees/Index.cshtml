@@ -11,7 +11,13 @@
         <button type="submit" class="btn btn-outline-primary">Search</button>
         <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
     </form>
-    <a asp-action="Create" class="btn btn-primary">Add Employee</a>
+    <div class="d-flex gap-2">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-action="ExportCsv" asp-route-search="@Model.Search" class="btn btn-outline-success">Export CSV</a>
+        }
+        <a asp-action="Create" class="btn btn-primary">Add Employee</a>
+    </div>
 </div>
 
 <table class="table table-striped">
@@ -35,11 +41,12 @@
                 <td>@e.MonthlySalary.ToString("N2")</td>
                 <td>@e.JoinedOn.ToString("dd MMM yyyy")</td>
                 <td>
+                    <a asp-action="Details" asp-route-id="@e.Id" class="btn btn-sm btn-outline-secondary">View</a>
                     <a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">Edit</a>
                     @if (User.IsInRole("Admin"))
-{
-    <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-}
+                    {
+                        <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    }
                 </td>
             </tr>
         }
