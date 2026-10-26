@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using EmployeeManagement.Web.Data;
 using EmployeeManagement.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -111,6 +111,7 @@ public class EmployeesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var employee = await _db.Employees
@@ -123,6 +124,7 @@ public class EmployeesController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var employee = await _db.Employees.FindAsync(id);

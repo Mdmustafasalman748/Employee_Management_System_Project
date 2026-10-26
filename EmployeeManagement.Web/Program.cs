@@ -30,13 +30,37 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
     DbSeeder.Seed(db);
 
-    // Demo account so visitors to the live site can try the app
-    var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    if (await users.FindByEmailAsync("demo@company.com") == null)
+    var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    foreach (var role in new[] { "Admin", "User" })
     {
-        await users.CreateAsync(
-            new IdentityUser { UserName = "demo@company.com", Email = "demo@company.com", EmailConfirmed = true },
-            "Demo@12345");
+        if (!await roles.RoleExistsAsync(role))
+            await roles.CreateAsync(new IdentityRole(role));
+    }
+
+    var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    // Demo account: a normal User, so visitors can add/edit but not delete
+    var demo = await users.FindByEmailAsync("demo@company.com");
+    if (demo == null)
+    {
+        demo = new IdentityUser { UserName = "demo@company.com", Email = "demo@company.com", EmailConfirmed = true };
+        await users.CreateAsync(demo, "Demo@12345");
+    }
+    if (!await users.IsInRoleAsync(demo, "User"))
+        await users.AddToRoleAsync(demo, "User");
+
+    // Admin account: only created when a password is configured
+    var adminPassword = builder.Configuration["Seed:AdminPassword"];
+    if (!string.IsNullOrEmpty(adminPassword))
+    {
+        var admin = await users.FindByEmailAsync("admin@company.com");
+        if (admin == null)
+        {
+            admin = new IdentityUser { UserName = "admin@company.com", Email = "admin@company.com", EmailConfirmed = true };
+            await users.CreateAsync(admin, adminPassword);
+        }
+        if (!await users.IsInRoleAsync(admin, "Admin"))
+            await users.AddToRoleAsync(admin, "Admin");
     }
 }
 

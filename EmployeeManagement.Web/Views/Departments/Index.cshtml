@@ -24,7 +24,10 @@
                 <td>@d.Employees.Count</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    @if (User.IsInRole("Admin"))
+{
                     <a asp-action="Delete" asp-route-id="@d.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+}
                 </td>
             </tr>
         }

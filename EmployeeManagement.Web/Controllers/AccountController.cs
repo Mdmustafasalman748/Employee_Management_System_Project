@@ -28,6 +28,7 @@ public class AccountController : Controller
 
         if (result.Succeeded)
         {
+            await _users.AddToRoleAsync(user, "User");
             await _signIn.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }

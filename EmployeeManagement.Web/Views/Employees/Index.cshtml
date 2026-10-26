@@ -36,7 +36,10 @@
                 <td>@e.JoinedOn.ToString("dd MMM yyyy")</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    @if (User.IsInRole("Admin"))
+{
+    <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+}
                 </td>
             </tr>
         }

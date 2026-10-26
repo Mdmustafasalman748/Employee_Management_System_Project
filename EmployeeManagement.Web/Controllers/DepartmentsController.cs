@@ -1,11 +1,13 @@
 using EmployeeManagement.Web.Data;
 using EmployeeManagement.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace EmployeeManagement.Web.Controllers;
 
+[Authorize]
 public class DepartmentsController : Controller
 {
     private readonly AppDbContext _db;
@@ -15,6 +17,7 @@ public class DepartmentsController : Controller
         _db = db;
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
         var departments = await _db.Departments
@@ -62,6 +65,7 @@ public class DepartmentsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var department = await _db.Departments
@@ -73,6 +77,7 @@ public class DepartmentsController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var department = await _db.Departments
