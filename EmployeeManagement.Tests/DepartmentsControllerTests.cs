@@ -1,82 +1,97 @@
-using EmployeeManagement.Web.Controllers;
 using EmployeeManagement.Web.Data;
 using EmployeeManagement.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using System;
-using Xunit;
 
-namespace EmployeeManagement.Tests;
+namespace EmployeeManagement.Web.Controllers;
 
-public class DepartmentsControllerTests
+[Authorize]
+public class DepartmentsController : Controller
 {
-    private static AppDbContext NewDb()
+    private readonly AppDbContext _db;
+
+    public DepartmentsController(AppDbContext db)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new AppDbContext(options);
+        _db = db;
     }
 
-    [Fact]
-    public async Task Create_ValidDepartment_SavesAndRedirects()
+    [AllowAnonymous]
+    public async Task<IActionResult> Index()
     {
-        using var db = NewDb();
-        var controller = new DepartmentsController(db).WithTempData();
-
-        var result = await controller.Create(new Department { Name = "Legal", Location = "Block D" });
-
-        Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(1, db.Departments.Count(d => d.Name == "Legal"));
+        var departments = await _db.Departments
+            .Include(d => d.Employees)
+            .OrderBy(d => d.Name)
+            .ToListAsync();
+        return View(departments);
     }
 
-    [Fact]
-    public async Task Edit_Post_ValidData_UpdatesDepartment()
+    public IActionResult Create() => View(new Department());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("Name,Location")] Department department)
     {
-        using var db = NewDb();
-        var dept = new Department { Name = "Old", Location = "Old Block" };
-        db.Departments.Add(dept);
-        db.SaveChanges();
-        var controller = new DepartmentsController(db).WithTempData();
+        if (!ModelState.IsValid) return View(department);
 
-        var result = await controller.Edit(dept.Id, new Department { Id = dept.Id, Name = "New", Location = "New Block" });
-
-        Assert.IsType<RedirectToActionResult>(result);
-        var saved = db.Departments.Find(dept.Id)!;
-        Assert.Equal("New", saved.Name);
-        Assert.Equal("New Block", saved.Location);
+        _db.Departments.Add(department);
+        await _db.SaveChangesAsync();
+        TempData["Success"] = $"Department {department.Name} was added.";
+        return RedirectToAction(nameof(Index));
     }
 
-    [Fact]
-    public async Task DeleteConfirmed_EmptyDepartment_IsDeleted()
+    public async Task<IActionResult> Edit(int id)
     {
-        using var db = NewDb();
-        var dept = new Department { Name = "Temp", Location = "Nowhere" };
-        db.Departments.Add(dept);
-        db.SaveChanges();
-        var controller = new DepartmentsController(db).WithTempData();
-
-        var result = await controller.DeleteConfirmed(dept.Id);
-
-        Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(0, db.Departments.Count(d => d.Name == "Temp"));
+        var department = await _db.Departments.FindAsync(id);
+        if (department == null) return NotFound();
+        return View(department);
     }
 
-    [Fact]
-    public async Task DeleteConfirmed_DepartmentWithEmployees_IsNotDeleted()
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Location")] Department department)
     {
-        using var db = NewDb();
-        var dept = new Department { Name = "Busy", Location = "Block E" };
-        db.Employees.Add(new Employee { FullName = "Sam", Email = "sam@test.com", Department = dept, MonthlySalary = 1000 });
-        db.SaveChanges();
-        var controller = new DepartmentsController(db).WithTempData();
+        if (id != department.Id) return NotFound();
+        if (!ModelState.IsValid) return View(department);
 
-        var result = await controller.DeleteConfirmed(dept.Id);
+        var existing = await _db.Departments.FindAsync(id);
+        if (existing == null) return NotFound();
 
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Delete", view.ViewName);
-        Assert.False(controller.ModelState.IsValid);
-        Assert.Equal(1, db.Departments.Count(d => d.Name == "Busy"));
+        existing.Name = department.Name;
+        existing.Location = department.Location;
+        await _db.SaveChangesAsync();
+        TempData["Success"] = $"Department {existing.Name} was updated.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var department = await _db.Departments
+            .Include(d => d.Employees)
+            .FirstOrDefaultAsync(d => d.Id == id);
+        if (department == null) return NotFound();
+        return View(department);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var department = await _db.Departments
+            .Include(d => d.Employees)
+            .FirstOrDefaultAsync(d => d.Id == id);
+        if (department == null) return RedirectToAction(nameof(Index));
+
+        if (department.Employees.Any())
+        {
+            ModelState.AddModelError("", "This department still has employees. Move or delete them first.");
+            return View("Delete", department);
+        }
+
+        _db.Departments.Remove(department);
+        await _db.SaveChangesAsync();
+        TempData["Success"] = $"Department {department.Name} was deleted.";
+        return RedirectToAction(nameof(Index));
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using EmployeeManagement.Web.Data;
 using EmployeeManagement.Web.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using System;
 
 namespace EmployeeManagement.Web.Controllers;
 
+[Authorize]
 public class EmployeesController : Controller
 {
     private readonly AppDbContext _db;
@@ -19,6 +21,7 @@ public class EmployeesController : Controller
 
     private const int PageSize = 5;
 
+    [AllowAnonymous]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
     {
         var query = _db.Employees.Include(e => e.Department).AsQueryable();

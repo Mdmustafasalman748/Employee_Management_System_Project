@@ -33,6 +33,28 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+    {
+                        <li class="nav-item d-flex align-items-center">
+                            <span class="navbar-text me-2">@User.Identity.Name</span>
+                        </li>
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
+                            </form>
+                        </li>
+    }
+    else
+    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+                        </li>
+    }
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -41,10 +63,10 @@
         <main role="main" class="pb-3">
             @if (TempData["Success"] is string successMessage)
             {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @successMessage
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @successMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             }
             @RenderBody()
         </main>
