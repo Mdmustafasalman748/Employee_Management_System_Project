@@ -4,8 +4,24 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Data Source=employees.db";
+var usePostgres = DbProvider.IsPostgres(connectionString);
+
+if (usePostgres)
+{
+    // Lets Npgsql accept the plain DateTime values used in this app
+    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+    connectionString = DbProvider.ToNpgsql(connectionString);
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (usePostgres) options.UseNpgsql(connectionString);
+    else options.UseSqlite(connectionString);
+});
+
+builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>();
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -27,7 +43,12 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+
+    // The existing migrations were generated for SQLite, so on PostgreSQL we
+    // create the schema straight from the model instead.
+    if (usePostgres) db.Database.EnsureCreated();
+    else db.Database.Migrate();
+
     DbSeeder.Seed(db);
 
     var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -49,7 +70,7 @@ using (var scope = app.Services.CreateScope())
     if (!await users.IsInRoleAsync(demo, "User"))
         await users.AddToRoleAsync(demo, "User");
 
-    // Admin account: only created when a password is configured
+    // Admin account: created, or its password updated, when a password is configured
     var adminPassword = builder.Configuration["Seed:AdminPassword"];
     if (!string.IsNullOrEmpty(adminPassword))
     {
@@ -59,24 +80,35 @@ using (var scope = app.Services.CreateScope())
             admin = new IdentityUser { UserName = "admin@company.com", Email = "admin@company.com", EmailConfirmed = true };
             await users.CreateAsync(admin, adminPassword);
         }
+        else if (!await users.CheckPasswordAsync(admin, adminPassword))
+        {
+            var token = await users.GeneratePasswordResetTokenAsync(admin);
+            await users.ResetPasswordAsync(admin, token, adminPassword);
+        }
+
         if (!await users.IsInRoleAsync(admin, "Admin"))
             await users.AddToRoleAsync(admin, "Admin");
     }
 }
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    // In production the hosting platform handles HTTPS in front of the container
+    app.UseHttpsRedirection();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseAuthentication();   // who are you?   (must come before...)
-app.UseAuthorization();    // what may you do?
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.MapHealthChecks("/health");
 
 app.MapControllerRoute(
     name: "default",
