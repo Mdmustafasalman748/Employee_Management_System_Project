@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.vs/
+.git/
+.github/
+*.db
+*.db-shm
+*.db-wal
+EmployeeManagement.Tests/
