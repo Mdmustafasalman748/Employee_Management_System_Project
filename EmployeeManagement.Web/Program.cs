@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 using EmployeeManagement.Web.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,10 +47,20 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // The existing migrations were generated for SQLite, so on PostgreSQL we
-    // create the schema straight from the model instead.
-    if (usePostgres) db.Database.EnsureCreated();
-    else db.Database.Migrate();
+    if (usePostgres)
+    {
+        // The existing migrations were generated for SQLite, so on PostgreSQL we
+        // create the tables straight from the model. EnsureCreated() skips everything
+        // if the database already holds any table, so we call CreateTables() directly
+        // and ignore "already exists" on later starts.
+        var creator = db.GetService<IRelationalDatabaseCreator>();
+        try { creator.CreateTables(); }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateTable) { }
+    }
+    else
+    {
+        db.Database.Migrate();
+    }
 
     DbSeeder.Seed(db);
 
