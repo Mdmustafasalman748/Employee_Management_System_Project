@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
-using Npgsql;
 using EmployeeManagement.Web.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,9 +78,15 @@ using (var scope = app.Services.CreateScope())
     if (demo == null)
     {
         demo = new IdentityUser { UserName = "demo@company.com", Email = "demo@company.com", EmailConfirmed = true };
-        await users.CreateAsync(demo, "Demo@12345");
+        var created = await users.CreateAsync(demo, "Demo@12345");
+        if (!created.Succeeded)
+        {
+            app.Logger.LogError("Could not create the demo user: {Errors}",
+                string.Join("; ", created.Errors.Select(e => e.Description)));
+            demo = null;
+        }
     }
-    if (!await users.IsInRoleAsync(demo, "User"))
+    if (demo != null && !await users.IsInRoleAsync(demo, "User"))
         await users.AddToRoleAsync(demo, "User");
 
     // Admin account: created, or its password updated, when a password is configured
@@ -91,16 +97,29 @@ using (var scope = app.Services.CreateScope())
         if (admin == null)
         {
             admin = new IdentityUser { UserName = "admin@company.com", Email = "admin@company.com", EmailConfirmed = true };
-            await users.CreateAsync(admin, adminPassword);
+            var created = await users.CreateAsync(admin, adminPassword);
+            if (!created.Succeeded)
+            {
+                app.Logger.LogError("Could not create the admin user. Check Seed__AdminPassword: {Errors}",
+                    string.Join("; ", created.Errors.Select(e => e.Description)));
+                admin = null;
+            }
         }
         else if (!await users.CheckPasswordAsync(admin, adminPassword))
         {
             var token = await users.GeneratePasswordResetTokenAsync(admin);
-            await users.ResetPasswordAsync(admin, token, adminPassword);
+            var reset = await users.ResetPasswordAsync(admin, token, adminPassword);
+            if (!reset.Succeeded)
+                app.Logger.LogError("Could not update the admin password: {Errors}",
+                    string.Join("; ", reset.Errors.Select(e => e.Description)));
         }
 
-        if (!await users.IsInRoleAsync(admin, "Admin"))
+        if (admin != null && !await users.IsInRoleAsync(admin, "Admin"))
             await users.AddToRoleAsync(admin, "Admin");
+    }
+    else
+    {
+        app.Logger.LogWarning("Seed__AdminPassword is not set, so no admin account was created.");
     }
 }
 
