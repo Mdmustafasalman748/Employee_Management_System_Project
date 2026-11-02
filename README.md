@@ -1,6 +1,6 @@
 # Staffroom: Employee Management System
 
-![CI](https://github.com/Mdmustafasalman748/Employee_Management_System_Project/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/Mdmustafasalman748/Employee_Management_System_Project/actions/workflows/ci.yml/badge.svg)](https://github.com/Mdmustafasalman748/Employee_Management_System_Project/actions/workflows/ci.yml)
 
 A full-stack employee and department manager built with ASP.NET Core MVC, deployed with a CI/CD pipeline.
 
