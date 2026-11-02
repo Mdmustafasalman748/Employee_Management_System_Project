@@ -3,33 +3,41 @@
     ViewData["Title"] = "Departments";
     }
 
-    <h1>Departments</h1>
-    <p><a asp-action="Create" class="btn btn-primary">Add Department</a></p>
+    <div class="page-head">
+        <h1>Departments</h1>
+        <a asp-action="Create" class="btn btn-primary">Add department</a>
+    </div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Employees</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var d in Model)
-        {
-            <tr>
-                <td>@d.Name</td>
-                <td>@d.Location</td>
-                <td>@d.Employees.Count</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                    @if (User.IsInRole("Admin"))
-{
-                    <a asp-action="Delete" asp-route-id="@d.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-}
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <div class="panel">
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Location</th>
+                        <th class="num">Employees</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model)
+                {
+                    <tr>
+                        <td><b>@d.Name</b></td>
+                        <td>@d.Location</td>
+                        <td class="num">@d.Employees.Count</td>
+                        <td>
+                            <div class="acts">
+                                <a asp-action="Edit" asp-route-id="@d.Id">Edit</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                <a class="danger" asp-action="Delete" asp-route-id="@d.Id">Delete</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>

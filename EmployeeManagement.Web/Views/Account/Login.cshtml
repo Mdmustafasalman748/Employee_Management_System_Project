@@ -1,41 +1,40 @@
 @model EmployeeManagement.Web.Models.LoginViewModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Log in";
 }
 
-<h1>Login</h1>
+<div class="auth">
+    <h1>Log in</h1>
+    <p class="muted">Sign in to add or edit employees.</p>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="alert alert-info">
-            Demo account: <strong>demo@company.com</strong> / <strong>Demo@12345</strong>
+    <div class="hint">
+        Want a quick look? Use the demo account <code>demo@company.com</code> with <code>Demo@12345</code>.
+    </div>
+
+    <form asp-action="Login" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="ReturnUrl" />
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" autocomplete="username" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
-        <form asp-action="Login" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ReturnUrl" />
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="current-password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+        <div class="form-check mb-3">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label"></label>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-
-            <div class="form-check mb-3">
-                <input asp-for="RememberMe" class="form-check-input" />
-                <label asp-for="RememberMe" class="form-check-label"></label>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Login</button>
-            <a asp-action="Register" class="btn btn-link">Create an account</a>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-primary">Log in</button>
+        <a asp-action="Register" class="btn btn-link">Create an account</a>
+    </form>
 </div>
 
 @section Scripts {

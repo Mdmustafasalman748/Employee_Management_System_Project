@@ -1,64 +1,93 @@
+@using EmployeeManagement.Web.Helpers
 @model EmployeeManagement.Web.Models.EmployeeListViewModel
 @{
     ViewData["Title"] = "Employees";
 }
 
-<h1>Employees</h1>
+<div class="page-head">
+    <h1>Employees</h1>
+</div>
 
-<div class="d-flex justify-content-between align-items-start mb-3">
-    <form asp-action="Index" method="get" class="d-flex gap-2">
-        <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Search name or email" />
+<div class="toolbar">
+    <form asp-action="Index" method="get" class="search">
+        <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Search by name or email" aria-label="Search employees" />
         <button type="submit" class="btn btn-outline-primary">Search</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        }
     </form>
-    <div class="d-flex gap-2">
+    <div class="toolbar-actions">
         @if (User.Identity?.IsAuthenticated == true)
         {
             <a asp-action="ExportCsv" asp-route-search="@Model.Search" class="btn btn-outline-success">Export CSV</a>
         }
-        <a asp-action="Create" class="btn btn-primary">Add Employee</a>
+        <a asp-action="Create" class="btn btn-primary">Add employee</a>
     </div>
 </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Department</th>
-            <th>Monthly Salary</th>
-            <th>Joined</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var e in Model.Employees)
-        {
-            <tr>
-                <td>@e.FullName</td>
-                <td>@e.Email</td>
-                <td>@e.Department?.Name</td>
-                <td>@e.MonthlySalary.ToString("N2")</td>
-                <td>@e.JoinedOn.ToString("dd MMM yyyy")</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@e.Id" class="btn btn-sm btn-outline-secondary">View</a>
-                    <a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                    @if (User.IsInRole("Admin"))
+<div class="panel">
+    @if (!Model.Employees.Any())
+    {
+        <div class="empty">
+            @if (string.IsNullOrWhiteSpace(Model.Search))
+            {
+                <p>No employees yet. Add the first one to get started.</p>
+            }
+            else
+            {
+                <p>No employees match "@Model.Search". Try a different name or email.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th class="num">Monthly salary</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model.Employees)
                     {
-                        <a asp-action="Delete" asp-route-id="@e.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                        <tr>
+                            <td>
+                                <div class="person">
+                                    <span class="avatar" style="@Ui.AvatarStyle(e.FullName)">@Ui.Initials(e.FullName)</span>
+                                    <div>
+                                        <b>@e.FullName</b>
+                                        <small>@e.Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="chip">@e.Department?.Name</span></td>
+                            <td class="num">@e.MonthlySalary.ToString("N2")</td>
+                            <td>@e.JoinedOn.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div class="acts">
+                                    <a asp-action="Details" asp-route-id="@e.Id">View</a>
+                                    <a asp-action="Edit" asp-route-id="@e.Id">Edit</a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a class="danger" asp-action="Delete" asp-route-id="@e.Id">Delete</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
                     }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
 
-@if (!Model.Employees.Any())
-{
-    <p class="text-muted">No employees found.</p>
-}
-
-<nav>
+<nav aria-label="Pages">
     <ul class="pagination">
         <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
             <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@(Model.Page - 1)">Previous</a>
