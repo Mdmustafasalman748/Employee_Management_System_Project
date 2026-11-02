@@ -10,7 +10,7 @@ Demo login: `demo@company.com` / `Demo@12345` (can add and edit; deleting is adm
 
 > Hosted on free tiers: if the site has been idle, the first load can take about a minute while it wakes up.
 
-![Dashboard](screenshot/Dashboard.png)
+![Dashboard](screenshots/Dashboard.png)
 
 
 ## What it does
@@ -25,7 +25,7 @@ Demo login: `demo@company.com` / `Demo@12345` (can add and edit; deleting is adm
 
 | Employees | Validation | Mobile |
 |---|---|---|
-| ![Employees](screenshot/Employee.png) | ![Validation](screenshot/Validation.png) | ![Mobile](screenshot/Mobile.png) |
+| ![Employees](screenshots/Employee.png) | ![Validation](screenshots/Validation.png) | ![Mobile](screenshots/Mobile.png) |
 
 ## Tech stack
 
