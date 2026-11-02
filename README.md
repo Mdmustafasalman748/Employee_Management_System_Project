@@ -19,7 +19,7 @@ C#, ASP.NET Core MVC (.NET 10), Entity Framework Core, SQLite, xUnit, GitHub Act
 ## Run tests
     dotnet test
 
-**Live demo:** https://<your-service>.onrender.com
+**Live demo:**  https://employee-management-system-project-3.onrender.com
 
 Demo login: `demo@company.com` / `Demo@12345` (can add and edit; delete is admin-only)
 
